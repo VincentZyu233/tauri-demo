@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tauri 桌面应用 Demo - 概念验证</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <!-- 侧边栏导航 -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <img src="/assets/tauri.svg" class="logo" alt="Tauri logo" />
+          <h2>Tauri Demo</h2>
+        </div>
+        <ul class="nav-list">
+          <li class="nav-item active" data-section="overview">📊 概览</li>
+          <li class="nav-item" data-section="inputs">📝 输入组件</li>
+          <li class="nav-item" data-section="buttons">🔘 按钮 & 操作</li>
+          <li class="nav-item" data-section="data">📁 数据展示</li>
+          <li class="nav-item" data-section="system">💻 系统信息</li>
+          <li class="nav-item" data-section="files">📂 文件操作</li>
+        </ul>
+      </nav>
+
+      <!-- 主内容区 -->
+      <main class="main-content">
+        <!-- 概览区 -->
+        <section id="overview" class="section active">
+          <h1>🚀 Tauri + Rust 桌面应用 Demo</h1>
+          <div class="card info-card">
+            <h3>概念验证说明</h3>
+            <p>这是一个使用 <strong>Tauri 2.0</strong> + <strong>Rust</strong> 构建的跨平台桌面应用 Demo。</p>
+            <ul>
+              <li>✅ 前端：HTML/CSS/JS (可换 React/Vue/Svelte)</li>
+              <li>✅ 后端：Rust (高性能、内存安全)</li>
+              <li>✅ 目标平台：Linux x64 / Windows x64</li>
+              <li>✅ 打包体积：约 5-10MB (远小于 Electron)</li>
+            </ul>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-value" id="rust-calls">0</span>
+              <span class="stat-label">Rust 调用次数</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="uptime">0s</span>
+              <span class="stat-label">运行时间</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="platform">-</span>
+              <span class="stat-label">当前平台</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 输入组件 -->
+        <section id="inputs" class="section">
+          <h1>📝 输入组件演示</h1>
+          
+          <div class="card">
+            <h3>文本输入 & Rust 交互</h3>
+            <div class="form-group">
+              <label for="greet-input">输入姓名：</label>
+              <input type="text" id="greet-input" placeholder="请输入姓名..." />
+              <button id="greet-btn" class="btn btn-primary">调用 Rust 问候</button>
+            </div>
+            <div class="result-box" id="greet-result"></div>
+          </div>
+
+          <div class="card">
+            <h3>数值计算 (Rust 后端)</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="num-a">数字 A：</label>
+                <input type="number" id="num-a" value="10" />
+              </div>
+              <div class="form-group">
+                <label for="num-b">数字 B：</label>
+                <input type="number" id="num-b" value="20" />
+              </div>
+              <div class="form-group">
+                <label for="operation">运算：</label>
+                <select id="operation">
+                  <option value="add">加法 (+)</option>
+                  <option value="subtract">减法 (-)</option>
+                  <option value="multiply">乘法 (×)</option>
+                  <option value="divide">除法 (÷)</option>
+                </select>
+              </div>
+            </div>
+            <button id="calc-btn" class="btn btn-primary">Rust 计算</button>
+            <div class="result-box" id="calc-result"></div>
+          </div>
+
+          <div class="card">
+            <h3>其他输入类型</h3>
+            <div class="form-group">
+              <label for="range-input">滑块 (Range)：<span id="range-value">50</span></label>
+              <input type="range" id="range-input" min="0" max="100" value="50" />
+            </div>
+            <div class="form-group">
+              <label for="date-input">日期选择：</label>
+              <input type="date" id="date-input" />
+            </div>
+            <div class="form-group">
+              <label for="color-input">颜色选择：</label>
+              <input type="color" id="color-input" value="#4a90d9" />
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="checkbox-demo" /> 复选框示例
+              </label>
+            </div>
+            <div class="form-group">
+              <label><input type="radio" name="radio-demo" value="A" checked /> 选项 A</label>
+              <label><input type="radio" name="radio-demo" value="B" /> 选项 B</label>
+              <label><input type="radio" name="radio-demo" value="C" /> 选项 C</label>
+            </div>
+          </div>
+        </section>
+
+        <!-- 按钮 & 操作 -->
+        <section id="buttons" class="section">
+          <h1>🔘 按钮 & 操作演示</h1>
+          
+          <div class="card">
+            <h3>按钮样式</h3>
+            <div class="button-group">
+              <button class="btn btn-primary">主要按钮</button>
+              <button class="btn btn-secondary">次要按钮</button>
+              <button class="btn btn-success">成功</button>
+              <button class="btn btn-warning">警告</button>
+              <button class="btn btn-danger">危险</button>
+              <button class="btn btn-outline">轮廓按钮</button>
+              <button class="btn" disabled>禁用按钮</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>对话框 & 通知</h3>
+            <div class="button-group">
+              <button id="btn-alert" class="btn btn-primary">显示 Alert</button>
+              <button id="btn-confirm" class="btn btn-secondary">确认对话框</button>
+              <button id="btn-prompt" class="btn btn-outline">输入对话框</button>
+            </div>
+            <div class="result-box" id="dialog-result"></div>
+          </div>
+
+          <div class="card">
+            <h3>进度指示器</h3>
+            <div class="form-group">
+              <label>进度条：</label>
+              <progress id="progress-bar" value="0" max="100"></progress>
+              <span id="progress-text">0%</span>
+            </div>
+            <button id="btn-progress" class="btn btn-primary">模拟进度 (Rust async)</button>
+          </div>
+        </section>
+
+        <!-- 数据展示 -->
+        <section id="data" class="section">
+          <h1>📁 数据展示</h1>
+          
+          <div class="card">
+            <h3>表格数据 (从 Rust 获取)</h3>
+            <button id="btn-load-table" class="btn btn-primary">加载数据</button>
+            <table class="data-table" id="demo-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>名称</th>
+                  <th>类型</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="4" class="empty-row">点击按钮加载数据...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>JSON 数据展示</h3>
+            <button id="btn-load-json" class="btn btn-primary">获取 JSON</button>
+            <pre class="json-display" id="json-output">{ "message": "点击按钮获取数据" }</pre>
+          </div>
+        </section>
+
+        <!-- 系统信息 -->
+        <section id="system" class="section">
+          <h1>💻 系统信息</h1>
+          
+          <div class="card">
+            <h3>系统详情 (Rust 获取)</h3>
+            <button id="btn-sysinfo" class="btn btn-primary">获取系统信息</button>
+            <div class="sys-info-grid" id="sys-info">
+              <div class="info-item">
+                <span class="info-label">操作系统</span>
+                <span class="info-value" id="sys-os">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">架构</span>
+                <span class="info-value" id="sys-arch">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">主机名</span>
+                <span class="info-value" id="sys-hostname">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Tauri 版本</span>
+                <span class="info-value" id="sys-tauri">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>性能测试</h3>
+            <p>测试 Rust 后端计算性能（计算斐波那契数列）</p>
+            <div class="form-group">
+              <label for="fib-input">斐波那契 n =</label>
+              <input type="number" id="fib-input" value="40" min="1" max="50" />
+            </div>
+            <button id="btn-fib" class="btn btn-primary">Rust 计算</button>
+            <button id="btn-fib-js" class="btn btn-secondary">JS 计算 (对比)</button>
+            <div class="result-box" id="fib-result"></div>
+          </div>
+        </section>
+
+        <!-- 文件操作 -->
+        <section id="files" class="section">
+          <h1>📂 文件操作</h1>
+          
+          <div class="card">
+            <h3>读写文件 (Rust fs)</h3>
+            <div class="form-group">
+              <label for="file-content">文件内容：</label>
+              <textarea id="file-content" rows="4" placeholder="输入要保存的内容..."></textarea>
+            </div>
+            <div class="button-group">
+              <button id="btn-save-file" class="btn btn-primary">保存文件</button>
+              <button id="btn-read-file" class="btn btn-secondary">读取文件</button>
+            </div>
+            <div class="result-box" id="file-result"></div>
+          </div>
+
+          <div class="card">
+            <h3>目录信息</h3>
+            <button id="btn-list-dir" class="btn btn-primary">列出当前目录</button>
+            <pre class="json-display" id="dir-output">点击按钮获取目录...</pre>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

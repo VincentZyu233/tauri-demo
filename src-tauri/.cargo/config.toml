@@ -1,0 +1,23 @@
+# Cargo 配置 - 交叉编译设置
+
+# Windows x64 交叉编译 (使用 MinGW)
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+ar = "x86_64-w64-mingw32-ar"
+
+# Windows x64 交叉编译 (使用 MSVC - 需要 xwin)
+# [target.x86_64-pc-windows-msvc]
+# linker = "lld-link"
+# rustflags = ["-Lnative=/path/to/windows/sdk/lib"]
+
+# Linux x64 (本地编译)
+[target.x86_64-unknown-linux-gnu]
+# 默认使用系统 gcc
+
+# 优化编译
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+opt-level = "z"  # 优化体积
