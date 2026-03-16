@@ -4,8 +4,8 @@ import { invoke } from "@tauri-apps/api/core";
 interface AppInfo {
   version: string;
   name: string;
-  tauriVersion: string;
-  startTime: number;
+  tauri_version: string;
+  start_time: number;
 }
 
 interface SystemInfo {
@@ -103,15 +103,13 @@ function App() {
     "💡 清晰的错误信息",
   ];
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "system") {
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      root.setAttribute("data-theme", isDark ? "dark" : "light");
-    } else {
-      root.setAttribute("data-theme", theme);
-    }
-  }, [theme]);
+  const callRust = () => setRustCalls(c => c + 1);
+
+  const addToast = (message: string, type: string = "info") => {
+    const id = toastId.current++;
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -124,21 +122,26 @@ function App() {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
-  const callRust = () => setRustCalls(c => c + 1);
-
-  const addToast = (message: string, type: string = "info") => {
-    const id = toastId.current++;
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
-  };
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "system") {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      root.setAttribute("data-theme", isDark ? "dark" : "light");
+    } else {
+      root.setAttribute("data-theme", theme);
+    }
+  }, [theme]);
 
   useEffect(() => {
     const loadInfo = async () => {
       try {
         const info = await invoke<AppInfo>("get_app_info");
         setAppInfo(info);
+        if (info.start_time > 0) {
+          startTimeRef.current = info.start_time;
+        }
       } catch {
-        setAppInfo({ version: "1.0.0", name: "Tauri Demo", tauriVersion: "2.x", startTime: Date.now() });
+        setAppInfo({ version: "1.0.0", name: "Tauri Demo", tauri_version: "2.x", start_time: Date.now() });
       }
     };
     loadInfo();
@@ -376,7 +379,7 @@ function App() {
                     <span className="hero-stat-label">版本</span>
                   </div>
                   <div className="hero-stat">
-                    <span className="hero-stat-value">{appInfo?.tauriVersion || "2.x"}</span>
+                    <span className="hero-stat-value">{appInfo?.tauri_version || "2.x"}</span>
                     <span className="hero-stat-label">Tauri</span>
                   </div>
                   <div className="hero-stat">
