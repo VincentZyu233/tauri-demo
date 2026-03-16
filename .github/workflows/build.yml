@@ -104,8 +104,7 @@ jobs:
             ZIP_NAME="${APP_NAME}-v${VERSION}-linux-${ARCH}.zip"
           fi
           
-          cd release
-          7z a -tzip "$ZIP_NAME" "../$BINARY" "../config.json"
+          7z a -tzip "release/$ZIP_NAME" "$BINARY" "config.json"
           
           ls -la release/
 

@@ -1,22 +1,40 @@
 # Tauri Demo
 
-跨平台桌面应用演示，展示各种 UI 组件和启动速度。
+A cross-platform desktop application built with [Tauri](https://tauri.app/).
 
-## 功能特性
+## Tech Stack
 
-- 🚀 快速启动
-- 🎨 多种 UI 组件展示
-- 🌐 跨平台支持 (Windows, macOS, Linux)
+| Layer | Technology |
+|-------|------------|
+| Framework | [Tauri 2.x](https://tauri.app/) |
+| Frontend | [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) |
+| Build Tool | [Vite](https://vitejs.dev/) |
+| Backend | [Rust](https://www.rust-lang.org/) |
+| Runtime | [Node.js](https://nodejs.org/) |
 
-## 构建
+## Features
+
+- Cross-platform support (Windows, macOS, Linux)
+- Native system integration
+- Fast and lightweight
+
+## Development
 
 ```bash
+# Install dependencies
 npm install
+
+# Run in development mode
+npm run tauri dev
+```
+
+## Build
+
+```bash
+# Build for production
 npm run tauri build
 ```
 
-## 平台支持
+## License
 
-- Windows x86/AMD64
-- Linux x86/ARM
-- macOS x86/ARM (Intel & Apple Silicon)
+MIT
