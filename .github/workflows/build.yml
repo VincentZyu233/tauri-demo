@@ -137,14 +137,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $APP_NAME = "tauri-demo"
-          $VERSION = "${{ steps.version.outputs.VERSION }}"
-          $ARCH = "${{ matrix.arch }}"
-          
           New-Item -ItemType Directory -Force -Path release | Out-Null
           
-          $BINARY = "./src-tauri/target/release/${APP_NAME}.exe"
-          $ZIP_NAME = "${APP_NAME}-v${VERSION}-win-${ARCH}.zip"
+          $BINARY = "./src-tauri/target/release/tauri-demo.exe"
+          $ZIP_NAME = "tauri-demo-v${{ steps.version.outputs.VERSION }}-win-${{ matrix.arch }}.zip"
           
           Compress-Archive -Path "$BINARY", "config.json" -DestinationPath "release/$ZIP_NAME"
           
@@ -154,18 +150,14 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          APP_NAME="tauri-demo"
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          ARCH="${{ matrix.arch }}"
-          
           mkdir -p release
           
           if [ "${{ runner.os }}" = "macOS" ]; then
-            BINARY="./src-tauri/target/release/bundle/macos/${APP_NAME}.app"
-            ZIP_NAME="${APP_NAME}-v${VERSION}-macos-${ARCH}.zip"
+            BINARY="./src-tauri/target/release/bundle/macos/tauri-demo.app"
+            ZIP_NAME="tauri-demo-v${{ steps.version.outputs.VERSION }}-macos-${{ matrix.arch }}.zip"
           else
-            BINARY="./src-tauri/target/release/${APP_NAME}"
-            ZIP_NAME="${APP_NAME}-v${VERSION}-linux-${ARCH}.zip"
+            BINARY="./src-tauri/target/release/tauri-demo"
+            ZIP_NAME="tauri-demo-v${{ steps.version.outputs.VERSION }}-linux-${{ matrix.arch }}.zip"
           fi
           
           7z a -tzip "release/$ZIP_NAME" "$BINARY" "config.json"
@@ -251,5 +243,5 @@ jobs:
           gh release create "$VERSION" \
             --title "Tauri Demo $VERSION" \
             --notes-file release_notes.md \
-            --latest \
+            --latest=true \
             "${FILES[@]}"
