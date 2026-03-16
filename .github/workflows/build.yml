@@ -73,12 +73,6 @@ jobs:
       - name: Build Tauri app
         run: npm run tauri build
 
-      - name: Install 7z (Windows)
-        if: matrix.platform == 'windows'
-        shell: bash
-        run: |
-          winget install -e --id 7zip.7zip --accept-source-agreements --accept-package-agreements
-
       - name: Install 7z (macOS)
         if: matrix.platform == 'macos'
         run: |
@@ -89,20 +83,34 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y p7zip-full
 
-      - name: Create zip package
+      - name: Create zip package (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $APP_NAME = "tauri-demo"
+          $VERSION = "${{ steps.version.outputs.VERSION }}"
+          $ARCH = "${{ matrix.arch }}"
+          
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          
+          $BINARY = "./src-tauri/target/release/${APP_NAME}.exe"
+          $ZIP_NAME = "${APP_NAME}-v${VERSION}-win-${ARCH}.zip"
+          
+          Compress-Archive -Path "$BINARY", "config.json" -DestinationPath "release/$ZIP_NAME"
+          
+          Get-ChildItem release/
+
+      - name: Create zip package (Unix)
+        if: matrix.platform != 'windows'
         shell: bash
         run: |
           APP_NAME="tauri-demo"
           VERSION="${{ steps.version.outputs.VERSION }}"
           ARCH="${{ matrix.arch }}"
-          PLATFORM="${{ matrix.platform }}"
           
           mkdir -p release
           
-          if [ "$PLATFORM" = "windows" ]; then
-            BINARY="./src-tauri/target/release/${APP_NAME}.exe"
-            ZIP_NAME="${APP_NAME}-v${VERSION}-win-${ARCH}.zip"
-          elif [ "$PLATFORM" = "macos" ]; then
+          if [ "${{ matrix.platform }}" = "macos" ]; then
             BINARY="./src-tauri/target/release/bundle/macos/${APP_NAME}.app"
             ZIP_NAME="${APP_NAME}-v${VERSION}-macos-${ARCH}.zip"
           else
