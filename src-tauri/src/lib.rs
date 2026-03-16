@@ -275,7 +275,7 @@ fn list_local_fonts() -> Vec<FontInfo> {
             font_dirs.push(home.join("Library/Fonts"));
         }
         
-        for dir in font_dirs.into_iter().flatten() {
+        for dir in font_dirs {
             if let Ok(entries) = fs::read_dir(&dir) {
                 for entry in entries.flatten() {
                     let path = entry.path();
@@ -310,7 +310,7 @@ fn list_local_fonts() -> Vec<FontInfo> {
             font_dirs.push(home.join(".local/share/fonts"));
         }
         
-        for dir in font_dirs.into_iter().flatten() {
+        for dir in font_dirs {
             if let Ok(entries) = fs::read_dir(&dir) {
                 for entry in entries.flatten() {
                     let path = entry.path();
