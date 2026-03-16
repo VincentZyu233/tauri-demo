@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload Release Asset
         if: matrix.os == 'windows-latest' && matrix.arch == 'x86_64'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}
           name: 'Tauri Demo v${{ steps.version.outputs.VERSION }}'
@@ -135,6 +135,7 @@ jobs:
             Trigger: ${{ github.event.head_commit.message }}
           files: release/*.zip
           draft: true
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
