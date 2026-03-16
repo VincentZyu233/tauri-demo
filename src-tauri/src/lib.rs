@@ -236,7 +236,7 @@ fn list_local_fonts() -> Vec<FontInfo> {
     
     #[cfg(target_os = "windows")]
     {
-        let mut font_dirs: Vec<Option<PathBuf>> = vec![
+        let font_dirs: Vec<Option<PathBuf>> = vec![
             env::var("WINDIR").ok().map(|w| PathBuf::from(w).join("Fonts")),
             env::var("LOCALAPPDATA").ok().map(|l| PathBuf::from(l).join("Microsoft").join("Windows").join("Fonts")),
         ];

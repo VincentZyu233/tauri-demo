@@ -42,8 +42,9 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(grep -E '^version\s*=' src-tauri/Cargo.toml | sed 's/version\s*=\s*"\([^"]*\)"/\1/')
+          VERSION=$(grep -E '^version\s*=' src-tauri/Cargo.toml | sed 's/.*=\s*"\([^"]*\)"/\1/')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION is: $VERSION"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -109,6 +110,7 @@ jobs:
           ls -la release/
 
       - name: Upload Release Asset
+        if: matrix.os == 'windows-latest' && matrix.arch == 'x86_64'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}
@@ -117,8 +119,15 @@ jobs:
             Platform: ${{ matrix.platform }} ${{ matrix.arch }}
             Version: ${{ steps.version.outputs.VERSION }}
             Built from commit: ${{ github.sha }}
-            Trigger: ${{ github.event.commit_message }}
+            Trigger: ${{ github.event.head_commit.message }}
           files: release/*.zip
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        if: matrix.os != 'windows-latest' || matrix.arch != 'x86_64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}-${{ matrix.arch }}
+          path: release/*.zip
