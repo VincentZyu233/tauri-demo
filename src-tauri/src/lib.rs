@@ -266,11 +266,14 @@ fn list_local_fonts() -> Vec<FontInfo> {
     
     #[cfg(target_os = "macos")]
     {
-        let font_dirs = vec![
+        let mut font_dirs = vec![
             PathBuf::from("/System/Library/Fonts"),
             PathBuf::from("/Library/Fonts"),
-            dirs::home_dir().map(|h| h.join("Library/Fonts")),
         ];
+        
+        if let Some(home) = dirs::home_dir() {
+            font_dirs.push(home.join("Library/Fonts"));
+        }
         
         for dir in font_dirs.into_iter().flatten() {
             if let Ok(entries) = fs::read_dir(&dir) {
@@ -297,12 +300,15 @@ fn list_local_fonts() -> Vec<FontInfo> {
     
     #[cfg(target_os = "linux")]
     {
-        let font_dirs = vec![
+        let mut font_dirs = vec![
             PathBuf::from("/usr/share/fonts"),
             PathBuf::from("/usr/local/share/fonts"),
-            dirs::home_dir().map(|h| h.join(".fonts")),
-            dirs::home_dir().map(|h| h.join(".local/share/fonts")),
         ];
+        
+        if let Some(home) = dirs::home_dir() {
+            font_dirs.push(home.join(".fonts"));
+            font_dirs.push(home.join(".local/share/fonts"));
+        }
         
         for dir in font_dirs.into_iter().flatten() {
             if let Ok(entries) = fs::read_dir(&dir) {
