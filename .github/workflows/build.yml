@@ -221,6 +221,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="v${{ steps.version.outputs.VERSION }}"
+          VERSION_WITHOUT_V="${{ steps.version.outputs.VERSION }}"
           
           shopt -s nullglob
           FILES=(tauri-demo-*.zip)
@@ -228,19 +229,19 @@ jobs:
           printf '  - %s\n' "${FILES[@]}"
           
           # Generate release notes
-          cat > release_notes.md << 'EOF'
+          cat > release_notes.md << EOF
           ## 📦 Tauri Demo $VERSION
 
           ### ⬇️ Downloads
 
           | Platform | Download |
           |----------|----------|
-          | **Windows x64** | [tauri-demo-v$VERSION-win-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-win-x86_64.zip) |
-          | **Windows ARM64** | [tauri-demo-v$VERSION-win-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-win-aarch64.zip) |
-          | **Linux x64** | [tauri-demo-v$VERSION-linux-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-linux-x86_64.zip) |
-          | **Linux ARM64** | [tauri-demo-v$VERSION-linux-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-linux-aarch64.zip) |
-          | **macOS x64** | [tauri-demo-v$VERSION-macos-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-macos-x86_64.zip) |
-          | **macOS ARM64** | [tauri-demo-v$VERSION-macos-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-macos-aarch64.zip) |
+          | **Windows x64** | [tauri-demo-v${VERSION_WITHOUT_V}-win-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v${VERSION_WITHOUT_V}-win-x86_64.zip) |
+          | **Windows ARM64** | [tauri-demo-v${VERSION_WITHOUT_V}-win-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v${VERSION_WITHOUT_V}-win-aarch64.zip) |
+          | **Linux x64** | [tauri-demo-v${VERSION_WITHOUT_V}-linux-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v${VERSION_WITHOUT_V}-linux-x86_64.zip) |
+          | **Linux ARM64** | [tauri-demo-v${VERSION_WITHOUT_V}-linux-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v${VERSION_WITHOUT_V}-linux-aarch64.zip) |
+          | **macOS x64** | [tauri-demo-v${VERSION_WITHOUT_V}-macos-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v${VERSION_WITHOUT_V}-macos-x86_64.zip) |
+          | **macOS ARM64** | [tauri-demo-v${VERSION_WITHOUT_V}-macos-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v${VERSION_WITHOUT_V}-macos-aarch64.zip) |
 
           ### 📊 Build Info
           - **Build date**: $(date -u '+%Y-%m-%d %H:%M UTC')
