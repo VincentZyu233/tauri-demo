@@ -1,44 +1,96 @@
-name: Build and Release
+name: Build & Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
+  # ── 判断是否需要构建 / 发布 ──────────────────────────────
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.flags.outputs.should_build }}
+      should_release: ${{ steps.flags.outputs.should_release }}
+      version: ${{ steps.flags.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse commit message
+        id: flags
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          MSG="$COMMIT_MSG"
+          
+          VERSION="v$(grep '^version' src-tauri/Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Version: $VERSION"
+          
+          BUILD=false
+          RELEASE=false
+          
+          if echo "$MSG" | grep -qi "build release"; then
+            BUILD=true
+            RELEASE=true
+          elif echo "$MSG" | grep -qi "build action"; then
+            BUILD=true
+          fi
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BUILD=true
+            RELEASE=true
+          fi
+          
+          echo "should_build=$BUILD"     >> "$GITHUB_OUTPUT"
+          echo "should_release=$RELEASE" >> "$GITHUB_OUTPUT"
+          
+          echo "📋 Flags: build=$BUILD release=$RELEASE"
+
+  # ── 多平台构建 ───────────────────────────────────────────
   build:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'build action') || contains(github.event.head_commit.message, 'build release')
+    name: Build ${{ matrix.name }}
+    needs: check
+    if: needs.check.outputs.should_build == 'true'
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            platform: windows
+            name: windows-x86_64
             arch: x86_64
+
           - os: windows-latest
-            platform: windows
-            arch: aarch64
-          - os: ubuntu-22.04
-            platform: linux
-            arch: x86_64
-          - os: ubuntu-22.04
-            platform: linux
-            arch: aarch64
-          - os: macos-latest
-            platform: macos
-            arch: x86_64
-          - os: macos-14
-            platform: macos
+            name: windows-aarch64
             arch: aarch64
 
-    runs-on: ${{ matrix.os }}
+          - os: ubuntu-22.04
+            name: linux-x86_64
+            arch: x86_64
+
+          - os: ubuntu-22.04
+            name: linux-aarch64
+            arch: aarch64
+
+          - os: macos-latest
+            name: macos-x86_64
+            arch: x86_64
+
+          - os: macos-14
+            name: macos-aarch64
+            arch: aarch64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get version from Cargo.toml
+      - name: Get version
         id: version
         shell: bash
         run: |
@@ -53,17 +105,15 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
 
       - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'linux'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install dependencies (macOS)
-        if: matrix.platform == 'macos'
+        if: runner.os == 'macOS'
         run: |
           brew install webkit2png
 
@@ -74,17 +124,17 @@ jobs:
         run: npm run tauri build
 
       - name: Install 7z (macOS)
-        if: matrix.platform == 'macos'
+        if: runner.os == 'macOS'
         run: |
           brew install 7zip
 
       - name: Install 7z (Linux)
-        if: matrix.platform == 'linux'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update && sudo apt-get install -y p7zip-full
 
       - name: Create zip package (Windows)
-        if: matrix.platform == 'windows'
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $APP_NAME = "tauri-demo"
@@ -101,7 +151,7 @@ jobs:
           Get-ChildItem release/
 
       - name: Create zip package (Unix)
-        if: matrix.platform != 'windows'
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           APP_NAME="tauri-demo"
@@ -110,7 +160,7 @@ jobs:
           
           mkdir -p release
           
-          if [ "${{ matrix.platform }}" = "macos" ]; then
+          if [ "${{ runner.os }}" = "macOS" ]; then
             BINARY="./src-tauri/target/release/bundle/macos/${APP_NAME}.app"
             ZIP_NAME="${APP_NAME}-v${VERSION}-macos-${ARCH}.zip"
           else
@@ -122,26 +172,84 @@ jobs:
           
           ls -la release/
 
-      - name: Upload Release Asset
-        if: matrix.os == 'windows-latest' && matrix.arch == 'x86_64'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.VERSION }}
-          name: 'Tauri Demo v${{ steps.version.outputs.VERSION }}'
-          body: |
-            Platform: ${{ matrix.platform }} ${{ matrix.arch }}
-            Version: ${{ steps.version.outputs.VERSION }}
-            Built from commit: ${{ github.sha }}
-            Trigger: ${{ github.event.head_commit.message }}
-          files: release/*.zip
-          draft: true
-          overwrite: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload artifact
-        if: matrix.os != 'windows-latest' || matrix.arch != 'x86_64'
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.platform }}-${{ matrix.arch }}
+          name: release-${{ matrix.name }}
           path: release/*.zip
+
+  # ── 发布到 GitHub Releases ──────────────────────────────
+  release:
+    name: Release
+    needs: [check, build]
+    if: needs.check.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: List downloaded files
+        run: |
+          echo "Downloaded artifacts:"
+          ls -lh
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -E '^version\s*=\s*"' src-tauri/Cargo.toml | sed -E 's/.*version\s*=\s*"([^"]+)".*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Delete existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          echo "🗑️ Cleaning up existing release/tag: $VERSION"
+          gh release delete "$VERSION" --yes --cleanup-tag 2>/dev/null || echo "No existing release to delete"
+          sleep 3
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          
+          shopt -s nullglob
+          FILES=(tauri-demo-*.zip)
+          echo "📤 Uploading ${#FILES[@]} files:"
+          printf '  - %s\n' "${FILES[@]}"
+          
+          # Generate release notes
+          cat > release_notes.md << 'EOF'
+          ## 📦 Tauri Demo $VERSION
+
+          ### ⬇️ Downloads
+
+          | Platform | Download |
+          |----------|----------|
+          | **Windows x64** | [tauri-demo-v$VERSION-win-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-win-x86_64.zip) |
+          | **Windows ARM64** | [tauri-demo-v$VERSION-win-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-win-aarch64.zip) |
+          | **Linux x64** | [tauri-demo-v$VERSION-linux-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-linux-x86_64.zip) |
+          | **Linux ARM64** | [tauri-demo-v$VERSION-linux-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-linux-aarch64.zip) |
+          | **macOS x64** | [tauri-demo-v$VERSION-macos-x86_64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-macos-x86_64.zip) |
+          | **macOS ARM64** | [tauri-demo-v$VERSION-macos-aarch64.zip](https://github.com/VincentZyu233/tauri-demo/releases/download/$VERSION/tauri-demo-v$VERSION-macos-aarch64.zip) |
+
+          ### 📊 Build Info
+          - **Build date**: $(date -u '+%Y-%m-%d %H:%M UTC')
+          - **Commit**: [\`${GITHUB_SHA::7}\`](https://github.com/VincentZyu233/tauri-demo/commit/${GITHUB_SHA})
+          EOF
+          
+          gh release create "$VERSION" \
+            --title "Tauri Demo $VERSION" \
+            --notes-file release_notes.md \
+            --latest \
+            --draft \
+            "${FILES[@]}"
