@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || contains(github.commit_message, 'build action') || contains(github.commit_message, 'build release')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'build action') || contains(github.event.head_commit.message, 'build release')
     strategy:
       fail-fast: false
       matrix:
