@@ -42,7 +42,7 @@ function App() {
   const [activeTab, setActiveTab] = useState("overview");
   const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
   const [rustCalls, setRustCalls] = useState(0);
-  const [startTime] = useState(Date.now());
+  const startTimeRef = useRef(Date.now());
   const [uptime, setUptime] = useState("0秒");
   
   const [greetName, setGreetName] = useState("");
@@ -144,7 +144,7 @@ function App() {
     loadInfo();
 
     const interval = setInterval(() => {
-      const secs = Math.floor((Date.now() - startTime) / 1000);
+      const secs = Math.floor((Date.now() - startTimeRef.current) / 1000);
       const mins = Math.floor(secs / 60);
       const hours = Math.floor(mins / 60);
       if (hours > 0) {
@@ -164,7 +164,7 @@ function App() {
     }, 500);
 
     return () => clearInterval(interval);
-  }, [startTime, tauriFacts]);
+  }, [tauriFacts]);
 
   const handleGreet = async () => {
     try {
@@ -359,6 +359,7 @@ function App() {
             </div>
             <div className="theme-toggle" onClick={() => setTheme(t => t === "light" ? "dark" : t === "dark" ? "system" : "light")}>
               <span className="theme-icon">{themeIcon}</span>
+              <span className="theme-label">{theme === "light" ? "白天" : theme === "dark" ? "黑夜" : "跟随"}</span>
             </div>
           </div>
         </header>
@@ -560,6 +561,7 @@ function App() {
               <div className="card slide-up">
                 <h3>💾 读写文件 (Rust fs)</h3>
                 <textarea value={fileContent} onChange={e => setFileContent(e.target.value)} placeholder="输入要保存的内容..." rows={4} className="animated-input" />
+                <p className="char-count">已输入 {fileContent.length} 字符</p>
                 <div className="btn-group">
                   <button className="btn btn-primary" onClick={handleSaveFile}>保存文件</button>
                   <button className="btn btn-secondary" onClick={handleReadFile}>读取文件</button>

@@ -262,23 +262,38 @@ body {
 }
 
 .theme-toggle {
-  width: 44px;
-  height: 44px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
   background: var(--bg-secondary);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 1.3rem;
+  font-size: 1rem;
   border: 1px solid var(--border);
 }
 
 .theme-toggle:hover {
   background: var(--accent-gradient);
-  transform: rotate(15deg) scale(1.05);
   box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+}
+
+.theme-toggle:hover .theme-label {
+  color: white;
+}
+
+.theme-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.char-count {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 /* Content Area */
