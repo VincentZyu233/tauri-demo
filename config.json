@@ -1,0 +1,22 @@
+{
+  "appName": "tauri-demo",
+  "version": "1.0.0",
+  "description": "Tauri Desktop Application Demo",
+  "author": "Demo Team",
+  "features": {
+    "window": {
+      "defaultWidth": 1000,
+      "defaultHeight": 700,
+      "resizable": true,
+      "fullscreen": false
+    },
+    "logging": {
+      "level": "info",
+      "output": "console"
+    }
+  },
+  "paths": {
+    "data": "./data",
+    "logs": "./logs"
+  }
+}

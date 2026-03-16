@@ -1,0 +1,119 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
+      - 'package.json'
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || contains(github.commit_message, 'build action') || contains(github.commit_message, 'build release')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: x86_64
+          - os: windows-latest
+            platform: windows
+            arch: aarch64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: x86_64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: aarch64
+          - os: macos-13
+            platform: macos
+            arch: x86_64
+          - os: macos-14
+            platform: macos
+            arch: aarch64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from Cargo.toml
+        id: version
+        run: |
+          VERSION=$(grep -E '^version\s*=' src-tauri/Cargo.toml | sed 's/version\s*=\s*"\([^"]*\)"/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install dependencies (macOS)
+        if: matrix.platform == 'macos'
+        run: |
+          brew install webkit2png
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Tauri app
+        run: npm run tauri build
+
+      - name: Create zip package
+        shell: bash
+        run: |
+          APP_NAME="tauri-demo"
+          VERSION=${{ steps.version.outputs.VERSION }}
+          
+          mkdir -p release
+          
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            BINARY="./src-tauri/target/release/${APP_NAME}.exe"
+            ZIP_NAME="${APP_NAME}-v${VERSION}-win-${{ matrix.arch }}.zip"
+            powershell -Command "Compress-Archive -Path '$BINARY', 'config.json' -DestinationPath 'release/$ZIP_NAME'"
+          elif [ "${{ matrix.platform }}" = "macos" ]; then
+            BINARY="./src-tauri/target/release/${APP_NAME}.app"
+            ZIP_NAME="${APP_NAME}-v${VERSION}-macos-${{ matrix.arch }}.zip"
+            cd release
+            zip -r "$ZIP_NAME" "../$BINARY" "../config.json"
+          else
+            BINARY="./src-tauri/target/release/${APP_NAME}"
+            ZIP_NAME="${APP_NAME}-v${VERSION}-linux-${{ matrix.arch }}.zip"
+            cd release
+            zip -r "$ZIP_NAME" "../$BINARY" "../config.json"
+          fi
+          
+          ls -la release/
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: 'Tauri Demo v${{ steps.version.outputs.VERSION }}'
+          body: |
+            Platform: ${{ matrix.platform }} ${{ matrix.arch }}
+            Version: ${{ steps.version.outputs.VERSION }}
+            Built from commit: ${{ github.sha }}
+            Trigger: ${{ github.event.commit_message }}
+          files: release/*.zip
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
