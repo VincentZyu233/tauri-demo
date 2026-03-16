@@ -74,6 +74,34 @@ function App() {
   const [localFonts, setLocalFonts] = useState<FontInfo[]>([]);
   const [selectedFonts, setSelectedFonts] = useState<string[]>(["LXGWWenKaiMono-Regular"]);
   const [currentFont, setCurrentFont] = useState("LXGWWenKaiMono-Regular");
+  const [progressMessage, setProgressMessage] = useState("🚀 准备启动...");
+
+  const tauriFacts = [
+    "⚡ Rust 内存安全，无需 GC",
+    "📦 打包体积仅 5-10MB",
+    "🔒 默认安全策略，无远程代码执行",
+    "🌐 跨平台：Windows / Linux / macOS",
+    "🦀 Rust 零成本抽象",
+    "⚡ 启动时间 < 100ms",
+    "💾 内存占用 < 30MB",
+    "🔧 原生系统 API 调用",
+    "🎯 接近原生性能",
+    "🛡️ 防止缓冲区溢出",
+    "📱 支持移动端构建",
+    "🎨 灵活的前端框架选择",
+    "🔄 热更新支持",
+    "📊 详细的性能分析",
+    "🌍 全球化应用支持",
+    "🎭 多窗口管理",
+    "🔗 丰富的插件生态",
+    "💻 轻量级二进制",
+    "🚀 快速开发迭代",
+    "🔐 企业级安全标准",
+    "📈 高并发处理能力",
+    "🎪 无需 WebView 依赖",
+    "🌟 现代化工具链",
+    "💡 清晰的错误信息",
+  ];
 
   useEffect(() => {
     const root = document.documentElement;
@@ -126,11 +154,17 @@ function App() {
       } else {
         setUptime(`${secs}秒`);
       }
-      setProgress(p => (p >= 100 ? 0 : p + 5));
-    }, 1000);
+      setProgress(p => {
+        const newProgress = p >= 100 ? 0 : p + 2;
+        if (newProgress === 0) {
+          setProgressMessage(tauriFacts[Math.floor(Math.random() * tauriFacts.length)]);
+        }
+        return newProgress;
+      });
+    }, 500);
 
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [startTime, tauriFacts]);
 
   const handleGreet = async () => {
     try {
@@ -275,13 +309,13 @@ function App() {
   };
 
   const tabs = [
-    { id: "overview", label: "🏠 首页", icon: "🏠" },
-    { id: "inputs", label: "📝 输入", icon: "📝" },
-    { id: "buttons", label: "🔘 组件", icon: "🔘" },
-    { id: "data", label: "📊 数据", icon: "📊" },
-    { id: "system", label: "💻 系统", icon: "💻" },
-    { id: "files", label: "📂 文件", icon: "📂" },
-    { id: "fonts", label: "🔤 字体", icon: "🔤" },
+    { id: "overview", label: "首页", icon: "🏠" },
+    { id: "inputs", label: "输入", icon: "📝" },
+    { id: "buttons", label: "组件", icon: "🔘" },
+    { id: "data", label: "数据", icon: "📊" },
+    { id: "system", label: "系统", icon: "💻" },
+    { id: "files", label: "文件", icon: "📂" },
+    { id: "fonts", label: "字体", icon: "🔤" },
   ];
 
   const themeIcon = theme === "light" ? "☀️" : theme === "dark" ? "🌙" : "🖥️";
@@ -290,7 +324,7 @@ function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2 className="logo">🚀 Tauri</h2>
+          <h2 className="logo">✨ Tauri</h2>
         </div>
         <nav className="sidebar-nav">
           {tabs.map((tab, index) => (
@@ -365,7 +399,7 @@ function App() {
                   <div className="progress-bar">
                     <div className="progress-fill animated" style={{ width: `${progress}%` }} />
                   </div>
-                  <p className="hint">Rust 比 JS 快 {fibN > 30 ? "数十倍" : "数倍"} 计算斐波那契</p>
+                  <p className="progress-message">{progressMessage}</p>
                 </div>
               </div>
             </div>

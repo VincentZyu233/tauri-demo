@@ -252,5 +252,4 @@ jobs:
             --title "Tauri Demo $VERSION" \
             --notes-file release_notes.md \
             --latest \
-            --draft \
             "${FILES[@]}"
