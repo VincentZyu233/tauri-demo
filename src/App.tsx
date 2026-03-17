@@ -157,8 +157,9 @@ function App() {
       } else {
         setUptime(`${secs}秒`);
       }
-      setProgress(p => {
-        const newProgress = p >= 100 ? 0 : p + 2;
+      
+      setProgress((prev: number) => {
+        const newProgress = prev >= 100 ? 0 : prev + 2;
         if (newProgress === 0) {
           setProgressMessage(tauriFacts[Math.floor(Math.random() * tauriFacts.length)]);
         }
@@ -167,7 +168,7 @@ function App() {
     }, 500);
 
     return () => clearInterval(interval);
-  }, [tauriFacts]);
+  }, []);
 
   const handleGreet = async () => {
     try {
