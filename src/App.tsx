@@ -74,7 +74,7 @@ function App() {
   const [localFonts, setLocalFonts] = useState<FontInfo[]>([]);
   const [selectedFonts, setSelectedFonts] = useState<string[]>(["LXGWWenKaiMono-Regular"]);
   const [currentFont, setCurrentFont] = useState("LXGWWenKaiMono-Regular");
-  const [progressMessage, setProgressMessage] = useState("🚀 准备启动...");
+  const [progressMessage, setProgressMessage] = useState("⚡ Rust 内存安全，无需 GC");
 
   const tauriFacts = [
     "⚡ Rust 内存安全，无需 GC",
@@ -159,13 +159,13 @@ function App() {
       }
       
       setProgress((prev: number) => {
-        const newProgress = prev >= 100 ? 0 : prev + 4;
+        const newProgress = prev >= 100 ? 0 : prev + 10;
         if (newProgress === 0 || prev === 0) {
           setProgressMessage(tauriFacts[Math.floor(Math.random() * tauriFacts.length)]);
         }
         return newProgress;
       });
-    }, 300);
+    }, 150);
 
     return () => clearInterval(interval);
   }, []);
