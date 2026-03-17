@@ -159,13 +159,13 @@ function App() {
       }
       
       setProgress((prev: number) => {
-        const newProgress = prev >= 100 ? 0 : prev + 2;
-        if (newProgress === 0) {
+        const newProgress = prev >= 100 ? 0 : prev + 4;
+        if (newProgress === 0 || prev === 0) {
           setProgressMessage(tauriFacts[Math.floor(Math.random() * tauriFacts.length)]);
         }
         return newProgress;
       });
-    }, 500);
+    }, 300);
 
     return () => clearInterval(interval);
   }, []);
